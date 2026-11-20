@@ -115,6 +115,53 @@
 .booking-root .logo-float {
   animation: logo-float 3.6s ease-in-out infinite;
 }
+
+/* ── Slideshow motion ─────────────────────────────────────────────
+   Photos get a Ken Burns pan/zoom (direction per slide, set from
+   SLIDE_MOTION in app/agendar/page.tsx); clips get a slow zoom-in so the
+   upscaled 720x404 frames never read as static.
+   Zoom is done with object-fit: cover + a shrinking object-view-box, not
+   transform: scale() — a transformed img reports a bounding box larger than
+   its card and spills past the rounded corners' overflow:hidden. */
+@keyframes slideshow-pan {
+  0% {
+    object-position: calc(50% + var(--kb-x0, 0%)) calc(50% + var(--kb-y0, 0%));
+    object-view-box: inset(0% 0% 0% 0%);
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  100% {
+    object-position: calc(50% + var(--kb-x1, 0%)) calc(50% + var(--kb-y1, 0%));
+    object-view-box: inset(var(--kb-crop, 8%) var(--kb-crop, 8%) var(--kb-crop, 8%) var(--kb-crop, 8%));
+  }
+}
+@keyframes slideshow-zoom {
+  0% {
+    object-view-box: inset(0% 0% 0% 0%);
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+  100% { object-view-box: inset(12% 12% 12% 12%); }
+}
+.booking-root .slideshow-pan,
+.booking-root .slideshow-zoom {
+  animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  animation-fill-mode: both;
+  animation-iteration-count: 1;
+  will-change: object-view-box, object-position;
+}
+.booking-root .slideshow-pan {
+  animation-name: slideshow-pan;
+  animation-duration: 5200ms;
+}
+.booking-root .slideshow-zoom {
+  animation-name: slideshow-zoom;
+  animation-duration: 8000ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .booking-root .logo-float { animation: none; }
+  .booking-root .slideshow-pan,
+  .booking-root .slideshow-zoom {
+    animation: none;
+    transform: none;
+  }
 }

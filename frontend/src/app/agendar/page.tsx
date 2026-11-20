@@ -34,10 +34,37 @@ import { LoyaltyCard } from '@/components/booking/loyalty-card';
 
 type Step = 'services' | 'calendar' | 'identify' | 'success';
 
-const SLIDESHOW_PHOTOS = ['/dm/shop-1.webp', '/dm/shop-2.webp', '/dm/shop-3.webp', '/dm/shop-4.webp', '/dm/work-corte.webp', '/dm/work-barba.webp', '/dm/work-combo.webp', '/dm/work-kids.webp'];
+const SLIDESHOW_PHOTOS = ['/dm/work-kids.webp', '/dm/shop-1.webp', '/dm/shop-2.webp', '/dm/shop-3.webp', '/dm/shop-4.webp', '/dm/work-corte.webp', '/dm/work-barba.webp', '/dm/work-combo.webp'];
+
+// The hero frame is a wide ~720x340 window, so the hug photo is pre-cropped
+// around the two faces (see scripts/dm-media.sh) — shop-4.webp itself is a
+// 3:4 card crop and would lose the faces in the wide frame.
+const HUG_PHOTO = '/dm/hero-hug.webp';
+
+// Per-slide Ken Burns direction: pan/zoom drift for each photo. `zoomTo` is
+// the resting scale; the animation scales up from it while panning across the
+// frame, so a still never sits static. Videos use a slow zoom-in only.
+const SLIDE_MOTION: Record<string, { zoomTo: number; panX: number; panY: number }> = {
+  // Hero: open wide on the shop, settle into the hug (faces sit just above
+  // centre in the pre-cropped 1440x680 frame).
+  [HUG_PHOTO]: { zoomTo: 1.14, panX: 0, panY: -3 },
+  '/dm/work-kids.webp': { zoomTo: 1.16, panX: -6, panY: 4 },
+  '/dm/shop-1.webp': { zoomTo: 1.14, panX: 7, panY: -3 },
+  '/dm/shop-2.webp': { zoomTo: 1.18, panX: -8, panY: -4 },
+  '/dm/shop-3.webp': { zoomTo: 1.16, panX: 6, panY: 5 },
+  '/dm/shop-4.webp': { zoomTo: 1.2, panX: -5, panY: 3 },
+  '/dm/work-corte.webp': { zoomTo: 1.18, panX: 8, panY: -4 },
+  '/dm/work-barba.webp': { zoomTo: 1.16, panX: -7, panY: 4 },
+  '/dm/work-combo.webp': { zoomTo: 1.14, panX: 5, panY: -5 },
+};
+
+// Slide duration: photos hold a touch longer than the clips.
+const PHOTO_SLIDE_MS = 5200;
+const VIDEO_SLIDE_MS = 8000;
 
 // Muted clips from the shop, shown inline in the slideshow and work gallery.
 const SLIDESHOW_MEDIA: { kind: 'image' | 'video'; src: string }[] = [
+  { kind: 'image', src: HUG_PHOTO },
   ...SLIDESHOW_PHOTOS.map((src) => ({ kind: 'image' as const, src })),
   { kind: 'video', src: '/dm/video/work-1.mp4' },
   { kind: 'video', src: '/dm/video/work-2.mp4' },
@@ -166,11 +193,15 @@ export default function BookingPage() {
 
   useEffect(() => {
     if (SLIDESHOW_MEDIA.length < 2) return;
-    const id = window.setInterval(() => {
+    // Interval per slide: photos 5.2s, clips 8s. Re-armed whenever the index
+    // changes so a clip always gets its full window.
+    const current = SLIDESHOW_MEDIA[slideshowIndex];
+    const delay = current?.kind === 'video' ? VIDEO_SLIDE_MS : PHOTO_SLIDE_MS;
+    const id = window.setTimeout(() => {
       setSlideshowIndex((i) => (i + 1) % SLIDESHOW_MEDIA.length);
-    }, 4500);
-    return () => window.clearInterval(id);
-  }, []);
+    }, delay);
+    return () => window.clearTimeout(id);
+  }, [slideshowIndex]);
 
   const openDays = config?.booking.openDays ?? [1, 2, 3, 4, 5, 6];
   const upcomingDates = useMemo(() => getUpcomingDates(5, openDays, lang), [config?.booking.openDays, lang]);
@@ -747,23 +778,33 @@ export default function BookingPage() {
           <div className="relative overflow-hidden" style={{ backgroundColor: '#0d0a07' }}>
             {(() => {
               const media = SLIDESHOW_MEDIA[slideshowIndex] || SLIDESHOW_MEDIA[0];
+              const motion = SLIDE_MOTION[media.src] || { zoomTo: 1.12, panX: 0, panY: 0 };
               return media.kind === 'video' ? (
                 <video
                   key={media.src}
                   src={media.src}
-                  className="w-full h-[320px] object-cover animate-fade-in-up"
+                  className="w-full h-[320px] object-cover slideshow-zoom"
+                  style={{ animationDuration: `${VIDEO_SLIDE_MS}ms` }}
                   autoPlay
                   muted
                   loop
                   playsInline
-                  preload="metadata"
+                  preload="auto"
                 />
               ) : (
                 <img
                   key={media.src}
                   src={media.src}
                   alt={`Foto ${slideshowIndex + 1}`}
-                  className="w-full h-[320px] object-cover animate-fade-in-up"
+                  className="w-full h-[320px] object-cover slideshow-pan"
+                  style={{
+                    '--kb-crop': `${Math.round((1 - 1 / motion.zoomTo) * 100)}%`,
+                    '--kb-x0': '0%',
+                    '--kb-y0': '0%',
+                    '--kb-x1': `${motion.panX}%`,
+                    '--kb-y1': `${motion.panY}%`,
+                    animationDuration: `${PHOTO_SLIDE_MS}ms`,
+                  } as React.CSSProperties}
                 />
               );
             })()}
@@ -903,7 +944,7 @@ export default function BookingPage() {
             {[...GALLERY_MEDIA, ...GALLERY_MEDIA].map((media, index) => (
               <div key={`${media.src}-${index}`} className="flex-none w-[150px] h-[200px] rounded-xl overflow-hidden" style={{ border: '1px solid var(--border-subtle)', backgroundColor: '#0d0a07' }}>
                 {media.kind === 'video' ? (
-                  <video src={media.src} className="w-full h-full object-cover" autoPlay muted loop playsInline preload="none" />
+                  <video src={media.src} className="w-full h-full object-cover" autoPlay muted loop playsInline preload="metadata" />
                 ) : (
                   <img src={media.src} alt="" loading="lazy" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
                 )}

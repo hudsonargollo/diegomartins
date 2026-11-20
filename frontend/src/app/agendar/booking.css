@@ -106,3 +106,15 @@
   box-shadow: 0 6px 18px rgba(201, 138, 75, 0.35);
   letter-spacing: 0.14em;
 }
+
+/* Success page logo: gentle float */
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.booking-root .logo-float {
+  animation: logo-float 3.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .booking-root .logo-float { animation: none; }
+}

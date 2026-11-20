@@ -76,6 +76,28 @@ const GALLERY_MEDIA: { kind: 'image' | 'video'; src: string }[] = [
 ];
 
 const MAPS_URL = 'https://maps.app.goo.gl/SWzDE8chNP2KE7xV6';
+
+// Selectable/typeable WhatsApp country codes (BO default).
+const COUNTRY_CODES: { code: string; label: string }[] = [
+  { code: '591', label: '🇧🇴 +591' },
+  { code: '55', label: '🇧🇷 +55' },
+  { code: '54', label: '🇦🇷 +54' },
+  { code: '56', label: '🇨🇱 +56' },
+  { code: '51', label: '🇵🇪 +51' },
+  { code: '57', label: '🇨🇴 +57' },
+  { code: '58', label: '🇻🇪 +58' },
+  { code: '593', label: '🇪🇨 +593' },
+  { code: '595', label: '🇵🇾 +595' },
+  { code: '598', label: '🇺🇾 +598' },
+  { code: '52', label: '🇲🇽 +52' },
+  { code: '1', label: '🇺🇸 +1' },
+  { code: '34', label: '🇪🇸 +34' },
+  { code: '351', label: '🇵🇹 +351' },
+  { code: '39', label: '🇮🇹 +39' },
+  { code: '44', label: '🇬🇧 +44' },
+  { code: '49', label: '🇩🇪 +49' },
+  { code: '33', label: '🇫🇷 +33' },
+];
 const ADDRESS = 'Dr. Alejandro Ramírez 18, Santa Cruz de la Sierra';
 const FALLBACK_INSTAGRAM = 'diegomartinsbarbearia';
 const LOGO = '/dm/diegomartins-logo.webp';
@@ -96,6 +118,7 @@ export default function BookingPage() {
 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('591');
   const [clientProfile, setClientProfile] = useState<ClientProfile | null>(null);
   const [customerLookupDone, setCustomerLookupDone] = useState(false);
 
@@ -243,7 +266,7 @@ export default function BookingPage() {
     try {
       const { data } = await publicApi.post('/public/booking/appointments', {
         name: customerName.trim(),
-        phone: `591${digits}`,
+        phone: `${countryCode}${digits}`,
         date: selectedDate,
         time: selectedSlot.time,
         services: cart.map((service) => service.id),
@@ -378,7 +401,7 @@ export default function BookingPage() {
       <div className="booking-root" data-theme={isDarkMode ? 'dark' : 'light'}>
         <div className="booking-frame flex flex-col items-center justify-center p-6 text-center animate-fade-in">
           <div className="mb-8">
-            <img src={LOGO} alt="Barbería Diego Martins" className="w-24 h-24 mx-auto opacity-90 object-contain" />
+            <img src={LOGO} alt="Barbería Diego Martins" className="w-48 h-48 mx-auto opacity-90 object-contain logo-float" />
           </div>
 
           <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: 'rgba(201,138,75,0.12)', border: '1.5px solid var(--brand-accent)' }}>
@@ -479,22 +502,38 @@ export default function BookingPage() {
 
               <div>
                 <label htmlFor="booking-phone" className="block text-xs font-medium uppercase tracking-widest mb-2" style={{ color: 'var(--text-secondary)' }}>WhatsApp</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'var(--text-disabled)' }}>+591</span>
+                <div className="flex gap-2">
                   <input
-                    id="booking-phone"
+                    aria-label="Código de país"
                     type="tel"
                     inputMode="numeric"
-                    value={customerPhone}
-                    onChange={(event) => setCustomerPhone(formatPhoneInput(event.target.value))}
-                    placeholder="700 12 345"
-                    className="w-full pl-16 pr-12 py-3.5 rounded-xl text-sm transition-all"
+                    list="booking-country-codes"
+                    value={countryCode ? `+${countryCode}` : '+'}
+                    onChange={(event) => setCountryCode(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                    className="w-[84px] shrink-0 px-2 py-3.5 rounded-xl text-sm text-center transition-all"
                     style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
                   />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-disabled)' }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                    </svg>
+                  <datalist id="booking-country-codes">
+                    {COUNTRY_CODES.map((item) => (
+                      <option key={item.code} value={`+${item.code}`}>{item.label}</option>
+                    ))}
+                  </datalist>
+                  <div className="relative flex-1">
+                    <input
+                      id="booking-phone"
+                      type="tel"
+                      inputMode="numeric"
+                      value={customerPhone}
+                      onChange={(event) => setCustomerPhone(formatPhoneInput(event.target.value, countryCode))}
+                      placeholder={countryCode === '591' ? '700 12 345' : 'WhatsApp'}
+                      className="w-full pl-4 pr-12 py-3.5 rounded-xl text-sm transition-all"
+                      style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-disabled)' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
                 {clientProfile && (
@@ -502,7 +541,7 @@ export default function BookingPage() {
                     {t('welcomeBack', lang)} {clientProfile.name}! {t('youHave', lang)} {clientProfile.visits} {clientProfile.visits === 1 ? t('visit', lang) : t('visits', lang)}.
                   </p>
                 )}
-                {!clientProfile && customerLookupDone && phoneDigits.length === 8 && (
+                {!clientProfile && customerLookupDone && phoneDigits.length >= 8 && (
                   <p className="text-xs mt-2 px-1" style={{ color: 'var(--text-secondary)' }}>
                     {t('firstTime', lang)}
                   </p>
@@ -513,7 +552,7 @@ export default function BookingPage() {
             <div className="mt-8">
               <button
                 onClick={completeBooking}
-                disabled={!customerName.trim() || phoneDigits.length < 8 || bookingLoading}
+                disabled={!customerName.trim() || !countryCode || phoneDigits.length < 8 || bookingLoading}
                 className="w-full btn-brand font-medium text-sm py-4 rounded-xl tracking-widest uppercase transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
               >
                 {bookingLoading ? t('booking', lang) : t('confirmBooking', lang)}

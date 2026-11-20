@@ -68,11 +68,16 @@ export function formatShortDate(dateStr: string, lang: Lang = 'es'): string {
 }
 
 // Bolivian mobile: 8 digits, grouped 3-2-3 (e.g. 700 12 345).
-export function formatPhoneInput(raw: string): string {
-  const digits = raw.replace(/\D/g, '').slice(0, 8);
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 5) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
-  return `${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5)}`;
+// Other country codes: up to 12 digits, grouped in blocks of 3.
+export function formatPhoneInput(raw: string, countryCode = '591'): string {
+  if (countryCode === '591') {
+    const digits = raw.replace(/\D/g, '').slice(0, 8);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 5) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+    return `${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5)}`;
+  }
+  const digits = raw.replace(/\D/g, '').slice(0, 12);
+  return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
 }
 
 export function todayStr(): string {

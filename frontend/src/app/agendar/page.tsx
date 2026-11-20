@@ -36,6 +36,17 @@ type Step = 'services' | 'calendar' | 'identify' | 'success';
 
 const SLIDESHOW_PHOTOS = ['/dm/shop-1.webp', '/dm/shop-2.webp', '/dm/shop-3.webp', '/dm/shop-4.webp', '/dm/work-corte.webp', '/dm/work-barba.webp', '/dm/work-combo.webp', '/dm/work-kids.webp'];
 
+// Muted clips from the shop, shown inline in the slideshow and work gallery.
+const SLIDESHOW_MEDIA: { kind: 'image' | 'video'; src: string }[] = [
+  ...SLIDESHOW_PHOTOS.map((src) => ({ kind: 'image' as const, src })),
+  { kind: 'video', src: '/dm/video/work-1.mp4' },
+  { kind: 'video', src: '/dm/video/work-2.mp4' },
+  { kind: 'video', src: '/dm/video/work-4.mp4' },
+  { kind: 'video', src: '/dm/video/work-5.mp4' },
+  { kind: 'video', src: '/dm/video/work-3.mp4' },
+  { kind: 'video', src: '/dm/video/work-6.mp4' },
+];
+
 const HIGHLIGHT_IMAGES: Record<string, string> = {
   'dm-corte': '/dm/work-corte.webp',
   'dm-barba': '/dm/work-barba.webp',
@@ -52,6 +63,16 @@ const GALLERY_PHOTOS = [
   '/dm/work-barba2.webp',
   '/dm/work-combo2.webp',
   '/dm/work-kids3.webp',
+];
+
+const GALLERY_MEDIA: { kind: 'image' | 'video'; src: string }[] = [
+  ...GALLERY_PHOTOS.map((src) => ({ kind: 'image' as const, src })),
+  { kind: 'video', src: '/dm/video/work-1.mp4' },
+  { kind: 'video', src: '/dm/video/work-2.mp4' },
+  { kind: 'video', src: '/dm/video/work-4.mp4' },
+  { kind: 'video', src: '/dm/video/work-5.mp4' },
+  { kind: 'video', src: '/dm/video/work-3.mp4' },
+  { kind: 'video', src: '/dm/video/work-6.mp4' },
 ];
 
 const MAPS_URL = 'https://maps.app.goo.gl/SWzDE8chNP2KE7xV6';
@@ -121,9 +142,9 @@ export default function BookingPage() {
   };
 
   useEffect(() => {
-    if (SLIDESHOW_PHOTOS.length < 2) return;
+    if (SLIDESHOW_MEDIA.length < 2) return;
     const id = window.setInterval(() => {
-      setSlideshowIndex((i) => (i + 1) % SLIDESHOW_PHOTOS.length);
+      setSlideshowIndex((i) => (i + 1) % SLIDESHOW_MEDIA.length);
     }, 4500);
     return () => window.clearInterval(id);
   }, []);
@@ -684,23 +705,29 @@ export default function BookingPage() {
         </div>
 
         <div className="mx-4 mb-6 rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-          <div className="relative overflow-hidden">
-            <img
-              src={SLIDESHOW_PHOTOS[slideshowIndex]}
-              alt={`Foto ${slideshowIndex + 1}`}
-              className="w-full h-[320px] object-cover animate-fade-in-up"
-            />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              {SLIDESHOW_PHOTOS.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSlideshowIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all ${index === slideshowIndex ? 'bg-[#E6FF57] w-4' : 'bg-white/50'}`}
-                  style={{ margin: '0 3px' }}
-                  aria-label={`Ver foto ${index + 1}`}
+          <div className="relative overflow-hidden" style={{ backgroundColor: '#0d0a07' }}>
+            {(() => {
+              const media = SLIDESHOW_MEDIA[slideshowIndex] || SLIDESHOW_MEDIA[0];
+              return media.kind === 'video' ? (
+                <video
+                  key={media.src}
+                  src={media.src}
+                  className="w-full h-[320px] object-cover animate-fade-in-up"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
                 />
-              ))}
-            </div>
+              ) : (
+                <img
+                  key={media.src}
+                  src={media.src}
+                  alt={`Foto ${slideshowIndex + 1}`}
+                  className="w-full h-[320px] object-cover animate-fade-in-up"
+                />
+              );
+            })()}
           </div>
 
           <div className="px-5 py-5">
@@ -756,7 +783,7 @@ export default function BookingPage() {
           lang={lang}
         />
 
-        <div className="mx-4 mb-8 rounded-2xl overflow-hidden relative" style={{ height: '200px' }}>
+        <div className="mx-4 mb-8 reserve-cta rounded-2xl overflow-hidden relative" style={{ height: '230px' }}>
           <img src="/dm/shop-2.webp" alt="" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: 'center 35%' }} aria-hidden="true" />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(18,13,9,0.92) 42%, rgba(18,13,9,0.15) 100%)' }} />
           <div className="relative z-10 h-full flex flex-col items-start justify-end p-6">
@@ -768,8 +795,8 @@ export default function BookingPage() {
             </p>
             <button
               onClick={() => servicesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-widest uppercase transition-all hover:opacity-90 active:scale-95"
-              style={{ backgroundColor: '#fff', color: '#141618' }}
+              className="reserve-pill flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold uppercase transition-all hover:brightness-110 active:scale-95"
+              style={{ color: '#fff' }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
@@ -827,16 +854,20 @@ export default function BookingPage() {
           })}
         </div>
 
-        {/* Work gallery */}
+        {/* Work gallery — auto-scrolling strip of photos + muted videos */}
         <div className="mb-8 overflow-hidden">
           <div className="flex items-center gap-3 mb-3 px-6">
             <div className="w-px h-4" style={{ backgroundColor: 'var(--accent-line)' }} />
             <h2 className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-primary)' }}>{t('galleryTitle', lang)}</h2>
           </div>
-          <div className="flex overflow-x-auto gap-3 px-6 pb-4 no-scrollbar snap-x">
-            {GALLERY_PHOTOS.map((src) => (
-              <div key={src} className="flex-none w-[150px] h-[200px] rounded-xl overflow-hidden snap-center" style={{ border: '1px solid var(--border-subtle)' }}>
-                <img src={src} alt="" loading="lazy" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
+          <div className="flex gap-3 px-6 pb-4 gallery-track" style={{ width: 'max-content', animation: 'gallery-scroll 42s linear infinite' }}>
+            {[...GALLERY_MEDIA, ...GALLERY_MEDIA].map((media, index) => (
+              <div key={`${media.src}-${index}`} className="flex-none w-[150px] h-[200px] rounded-xl overflow-hidden" style={{ border: '1px solid var(--border-subtle)', backgroundColor: '#0d0a07' }}>
+                {media.kind === 'video' ? (
+                  <video src={media.src} className="w-full h-full object-cover" autoPlay muted loop playsInline preload="none" />
+                ) : (
+                  <img src={media.src} alt="" loading="lazy" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
+                )}
               </div>
             ))}
           </div>

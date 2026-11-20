@@ -73,3 +73,36 @@
 .booking-root .animate-pulse-soft {
   animation: booking-pulse-soft 1.6s ease-in-out infinite;
 }
+
+/* Work gallery: continuous horizontal marquee */
+@keyframes gallery-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.booking-root .gallery-track:hover {
+  animation-play-state: paused;
+}
+
+/* Highlighted reservation CTA */
+.booking-root .reserve-cta {
+  position: relative;
+  border: 1px solid rgba(201, 138, 75, 0.55) !important;
+  box-shadow: 0 10px 34px rgba(201, 138, 75, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+.booking-root .reserve-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(201, 138, 75, 0.16), transparent 55%);
+  pointer-events: none;
+}
+.booking-root .reserve-cta:hover {
+  box-shadow: 0 14px 42px rgba(201, 138, 75, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+.booking-root .reserve-pill {
+  background: linear-gradient(100deg, #c98a4b, #a9672f);
+  box-shadow: 0 6px 18px rgba(201, 138, 75, 0.35);
+  letter-spacing: 0.14em;
+}

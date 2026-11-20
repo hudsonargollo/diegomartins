@@ -113,7 +113,8 @@ export function SmartCart({ cart, onContinue, onRemoveItem, label, lang }: Smart
 
           <button
             onClick={onContinue}
-            className="flex-1 btn-brand py-3 rounded-xl text-sm font-medium tracking-widest uppercase transition-all hover:opacity-90 active:scale-[0.98]"
+            className="reserve-pill flex-1 py-3 rounded-xl text-sm font-medium uppercase transition-all hover:brightness-110 active:scale-[0.98]"
+            style={{ color: '#fff' }}
           >
             {continueLabel}
           </button>

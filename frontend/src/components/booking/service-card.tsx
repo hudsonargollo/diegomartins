@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import type { BookingService } from '@/lib/booking-types';
-import { durationLabel } from '@/lib/booking-utils';
-import { money, serviceCopy, categoryLabel, t, type Lang } from '@/lib/i18n';
+import { money, serviceCopy, t, type Lang } from '@/lib/i18n';
 import { categoryIconMap, serviceIconKey } from '@/components/booking/highlight-card';
 
 interface ServiceCardProps {
@@ -117,12 +116,6 @@ export function ServiceCard({ service, isSelected, onToggle, lang }: ServiceCard
             )}
           </button>
         </div>
-      </div>
-
-      <div className="mt-2 flex items-center gap-1.5 text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-disabled)' }}>
-        <span className="w-1 h-1 rounded-full" style={{ backgroundColor: service.categoryColor || 'var(--accent-line)' }} />
-        {categoryLabel(service.category, lang)}
-        <span className="sr-only">{durationLabel(service.duration)}</span>
       </div>
     </div>
   );

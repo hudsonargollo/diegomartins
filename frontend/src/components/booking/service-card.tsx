@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { BookingService } from '@/lib/booking-types';
 import { durationLabel } from '@/lib/booking-utils';
 import { money, serviceCopy, categoryLabel, t, type Lang } from '@/lib/i18n';
-import { categoryIconMap } from '@/components/booking/highlight-card';
+import { categoryIconMap, serviceIconKey } from '@/components/booking/highlight-card';
 
 interface ServiceCardProps {
   service: BookingService;
@@ -18,6 +18,7 @@ export function ServiceCard({ service, isSelected, onToggle, lang }: ServiceCard
   const copy = serviceCopy(service.id, lang);
   const name = copy?.name ?? service.name;
   const description = copy?.description ?? service.description;
+  const iconKey = serviceIconKey(service);
 
   return (
     <div
@@ -32,14 +33,17 @@ export function ServiceCard({ service, isSelected, onToggle, lang }: ServiceCard
       <div className="flex">
         <div className="flex flex-col justify-center px-4 flex-1">
           <div className="flex items-start gap-3 mb-2">
-            {service.categoryIcon ? (
-              <div className="w-10 h-10 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  {categoryIconMap[service.categoryIcon]}
+            {iconKey ? (
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ backgroundColor: 'rgba(201,138,75,0.12)', border: '1px solid rgba(201,138,75,0.35)' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c98a4b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  {categoryIconMap[iconKey]}
                 </svg>
               </div>
             ) : (
-              <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--bg-surface-hover)' }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--bg-surface-hover)' }}>
                 <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-disabled)' }}>
                   {service.category.charAt(0)}
                 </span>

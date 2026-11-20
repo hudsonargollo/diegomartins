@@ -87,7 +87,42 @@ export const categoryIconMap: Record<string, any> = {
       <line x1="7" y1="17" x2="7" y2="17" />
     </>
   ),
+  scissors: (
+    <>
+      <circle cx="6" cy="6" r="3" />
+      <circle cx="6" cy="18" r="3" />
+      <path d="M20 4 8.12 15.88" />
+      <path d="M14.47 14.48 20 20" />
+      <path d="M8.12 8.12 12 12" />
+    </>
+  ),
+  razor: (
+    <>
+      <path d="m18 2 4 4-10 10H8v-4L18 2z" />
+      <path d="m8 16-5 5" />
+      <path d="m14 6 4 4" />
+    </>
+  ),
+  brow: (
+    <>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
 };
+
+// Per-service icons for the catalog (DB categoryIcon is an emoji, not a map key).
+export const serviceIconMap: Record<string, string> = {
+  'dm-corte': 'scissors',
+  'dm-barba': 'razor',
+  'dm-cabello-barba': 'combo',
+  'dm-cejas': 'brow',
+};
+
+export function serviceIconKey(service: { id: string; categoryIcon?: string | null }): string | undefined {
+  return serviceIconMap[service.id]
+    ?? (service.categoryIcon && categoryIconMap[service.categoryIcon] ? service.categoryIcon : undefined);
+}
 
 interface HighlightCardProps {
   service: BookingService;

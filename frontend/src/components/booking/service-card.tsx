@@ -21,7 +21,7 @@ export function ServiceCard({ service, isSelected, onToggle, lang }: ServiceCard
 
   return (
     <div
-      className="relative p-4 mb-3 rounded-2xl transition-all duration-300 cursor-pointer"
+      className="relative px-4 py-3 mb-3 rounded-2xl transition-all duration-300 cursor-pointer"
       style={{
         backgroundColor: 'var(--bg-surface)',
         border: isSelected ? '1.5px solid var(--text-primary)' : '1px solid var(--border-subtle)',
@@ -30,73 +30,75 @@ export function ServiceCard({ service, isSelected, onToggle, lang }: ServiceCard
       onClick={() => onToggle(service)}
     >
       <div className="flex">
-        <div className="flex flex-col justify-center px-4 flex-1">
-          <div className="flex items-start gap-3 mb-2">
+        <div className="flex flex-col justify-center flex-1 min-w-0">
+          <div className="flex items-center gap-3">
             {iconKey ? (
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                 style={{ backgroundColor: 'rgba(201,138,75,0.12)', border: '1px solid rgba(201,138,75,0.35)' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c98a4b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c98a4b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   {categoryIconMap[iconKey]}
                 </svg>
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--bg-surface-hover)' }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--bg-surface-hover)' }}>
                 <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-disabled)' }}>
                   {service.category.charAt(0)}
                 </span>
               </div>
             )}
-            <h3 className="font-display text-xl font-light leading-tight" style={{ color: 'var(--text-primary)' }}>
-              {name}
-            </h3>
-          </div>
-
-          <div className="flex items-center gap-3 text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>
-            <div className="flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              {service.duration} min
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-display text-lg font-light leading-tight truncate" style={{ color: 'var(--text-primary)' }}>
+                  {name}
+                </h3>
+                <div className="flex items-center gap-2 text-xs shrink-0" style={{ color: 'var(--text-secondary)' }}>
+                  <span className="flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    {service.duration} min
+                  </span>
+                  <span>·</span>
+                  <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{money(service.price, lang)}</span>
+                </div>
+              </div>
+              <button
+                onClick={(event) => { event.stopPropagation(); setExpanded(!expanded); }}
+                className="text-[11px] font-medium flex items-center gap-1 mt-0.5 transition-opacity hover:opacity-60"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                {expanded ? t('less', lang) : t('moreInfo', lang)}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
             </div>
-            <span>·</span>
-            <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{money(service.price, lang)}</span>
           </div>
 
           <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
             <div className="overflow-hidden">
-              <div className="text-xs pb-3 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              <div className="text-xs pt-2 pb-1 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 {description}
               </div>
             </div>
           </div>
-
-          <button
-            onClick={(event) => { event.stopPropagation(); setExpanded(!expanded); }}
-            className="text-xs font-medium flex items-center gap-1 transition-opacity hover:opacity-60"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            {expanded ? t('less', lang) : t('moreInfo', lang)}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
         </div>
 
-        <div className="flex items-center justify-center pt-1">
+        <div className="flex items-center justify-center pl-3">
           <button
             aria-label={isSelected ? `${t('remove', lang)} ${name}` : `${t('add', lang)} ${name}`}
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"

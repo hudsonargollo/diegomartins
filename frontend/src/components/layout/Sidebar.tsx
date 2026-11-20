@@ -33,6 +33,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { user, tenant, logout } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('sidebar_collapsed');
@@ -47,30 +48,38 @@ export default function Sidebar() {
     });
   };
 
+  // Open/close is independent of collapse: open = expanded (wide), closed = compact.
+  const toggleOpen = () => setOpen((prev) => !prev);
+
   const role = user?.role || 'cashier';
   const items = NAV_ITEMS.filter((item) => item.roles.includes(role));
 
   return (
     <aside
       className={cn(
-        'flex flex-col h-screen sticky top-0 bg-[var(--sidebar)] border-r border-[var(--sidebar-border)] transition-all duration-200',
-        collapsed ? 'w-16' : 'w-56'
+        'flex flex-col h-screen sticky top-0 border-r border-[var(--sidebar-border)] transition-all duration-200',
+        open ? 'w-64' : 'w-16',
+        collapsed && !open && 'w-16'
       )}
     >
-      <div className={cn('flex items-center justify-between p-3 border-b border-[var(--sidebar-border)]', collapsed && 'flex-col gap-2')}>
-        {!collapsed ? (
-          <div className="flex items-center gap-2 min-w-0">
-            <img src="/dm/logo.svg" alt="" className="h-8 w-8 shrink-0" />
+      <div
+        className={cn(
+          'flex items-center justify-between px-3 py-3 border-b border-[var(--sidebar-border)]',
+          open ? 'items-center gap-3' : 'items-center'
+        )}
+      >
+        {open ? (
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <img src="/dm/logo.svg" alt="" className="h-10 w-10 shrink-0" />
             <div className="min-w-0">
-              <div className="font-display text-base font-medium truncate">{tenant?.business_name || 'Diego Martins Barbearia'}</div>
-              <div className="text-xs text-[var(--muted-foreground)] truncate">{user?.name}</div>
+              <div className="text-sm font-display font-medium truncate">{user?.name || tenant?.business_name}</div>
             </div>
           </div>
         ) : (
-          <img src="/dm/logo.svg" alt="" className="h-8 w-8" />
+          <img src="/dm/logo.svg" alt="" className="h-9 w-9" />
         )}
-        <button onClick={toggle} className="p-1.5 rounded-md hover:bg-[var(--sidebar-accent)] shrink-0" title="Alternar menu lateral">
-          <PanelLeft className="h-4 w-4" />
+        <button onClick={toggleOpen} className="p-1.5 rounded-md hover:bg-[var(--sidebar-accent)] shrink-0" title={open ? 'Recolher' : 'Expandir'}>
+          {open ? <PanelLeft className="h-4 w-4" /> : <PanelLeft className="h-4 w-4 rotate-90" />}
         </button>
       </div>
 

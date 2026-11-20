@@ -309,7 +309,28 @@ function runMigrations(): void {
     migrateToV2();
   }
 
+  // Backfill columns that the original v1 schema lacked.
+  migrateV1ToV2Backfill();
+
   console.log('[DB] Migrations complete');
+}
+
+function columnExists(db: Database.Database, table: string, column: string): boolean {
+  const row = db.prepare(`PRAGMA table_info(${table})`).get() as { name: string } | undefined;
+  return !!row && row.name === column;
+}
+
+function addColumnIfMissing(db: Database.Database, table: string, columnDef: string): void {
+  const col = columnDef.split(' ')[0];
+  if (!columnExists(db, table, col)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${columnDef}`);
+    console.log(`[DB] Added column '${col}' to '${table}'`);
+  }
+}
+
+function migrateV1ToV2Backfill(): void {
+  const db = getDatabase();
+  addColumnIfMissing(db, 'users', "phone TEXT");
 }
 
 function createSchema(): void {

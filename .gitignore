@@ -9,3 +9,4 @@ release/
 .DS_Store
 .claude/
 build/config.gypi
+backups/

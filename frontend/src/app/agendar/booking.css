@@ -141,27 +141,62 @@
   }
   100% { object-view-box: inset(12% 12% 12% 12%); }
 }
-.booking-root .slideshow-pan,
-.booking-root .slideshow-zoom {
-  animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+/* Outgoing slide: fade away while sliding off to the left, revealing the
+   incoming slide (which fades in on top of it) — never a blank frame. */
+@keyframes slideshow-fadeout {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-6%) scale(1.04);
+  }
+}
+/* Incoming slide: fade in over the outgoing one. */
+@keyframes slideshow-fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* Outgoing slide: single fade-out (duration set inline to SLIDE_FADE_MS). */
+.booking-root .slideshow-fadeout {
+  animation-name: slideshow-fadeout;
+  animation-duration: 900ms;
   animation-fill-mode: both;
   animation-iteration-count: 1;
-  will-change: object-view-box, object-position;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  will-change: opacity, transform;
 }
-.booking-root .slideshow-pan {
-  animation-name: slideshow-pan;
-  animation-duration: 5200ms;
+/* Current slide: motion + fade-in as a two-animation list so each keeps its
+   own duration. --kb-dur is set inline per slide kind (photo 5.2s, clip 8s);
+   a single inline animationDuration would apply to both and break the fade. */
+.booking-root .slideshow-pan.slideshow-fadein {
+  animation-name: slideshow-pan, slideshow-fadein;
+  animation-duration: var(--kb-dur, 5200ms), 900ms;
+  animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1), ease-out;
+  animation-fill-mode: both, both;
+  animation-iteration-count: 1, 1;
+  will-change: object-view-box, object-position, opacity;
 }
-.booking-root .slideshow-zoom {
-  animation-name: slideshow-zoom;
-  animation-duration: 8000ms;
+.booking-root .slideshow-zoom.slideshow-fadein {
+  animation-name: slideshow-zoom, slideshow-fadein;
+  animation-duration: var(--kb-dur, 8000ms), 900ms;
+  animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1), ease-out;
+  animation-fill-mode: both, both;
+  animation-iteration-count: 1, 1;
+  will-change: object-view-box, opacity;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .booking-root .logo-float { animation: none; }
   .booking-root .slideshow-pan,
-  .booking-root .slideshow-zoom {
+  .booking-root .slideshow-zoom,
+  .booking-root .slideshow-pan.slideshow-fadein,
+  .booking-root .slideshow-zoom.slideshow-fadein,
+  .booking-root .slideshow-fadeout {
     animation: none;
     transform: none;
+    opacity: 1;
   }
 }

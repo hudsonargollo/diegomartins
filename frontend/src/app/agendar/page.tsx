@@ -61,6 +61,9 @@ const SLIDE_MOTION: Record<string, { zoomTo: number; panX: number; panY: number 
 // Slide duration: photos hold a touch longer than the clips.
 const PHOTO_SLIDE_MS = 5200;
 const VIDEO_SLIDE_MS = 8000;
+// Cross-fade between slides. The outgoing slide stays mounted for this long
+// while the incoming one fades in over it, so the frame is never empty.
+const SLIDE_FADE_MS = 900;
 
 // Muted clips from the shop, shown inline in the slideshow and work gallery.
 const SLIDESHOW_MEDIA: { kind: 'image' | 'video'; src: string }[] = [
@@ -777,35 +780,72 @@ export default function BookingPage() {
         <div className="mx-4 mb-6 rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
           <div className="relative overflow-hidden" style={{ backgroundColor: '#0d0a07' }}>
             {(() => {
-              const media = SLIDESHOW_MEDIA[slideshowIndex] || SLIDESHOW_MEDIA[0];
-              const motion = SLIDE_MOTION[media.src] || { zoomTo: 1.12, panX: 0, panY: 0 };
-              return media.kind === 'video' ? (
-                <video
-                  key={media.src}
-                  src={media.src}
-                  className="w-full h-[320px] object-cover slideshow-zoom"
-                  style={{ animationDuration: `${VIDEO_SLIDE_MS}ms` }}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="auto"
-                />
-              ) : (
-                <img
-                  key={media.src}
-                  src={media.src}
-                  alt={`Foto ${slideshowIndex + 1}`}
-                  className="w-full h-[320px] object-cover slideshow-pan"
-                  style={{
-                    '--kb-crop': `${Math.round((1 - 1 / motion.zoomTo) * 100)}%`,
-                    '--kb-x0': '0%',
-                    '--kb-y0': '0%',
-                    '--kb-x1': `${motion.panX}%`,
-                    '--kb-y1': `${motion.panY}%`,
-                    animationDuration: `${PHOTO_SLIDE_MS}ms`,
-                  } as React.CSSProperties}
-                />
+              // Render the outgoing slide as well as the current one so the
+              // change is a cross-fade instead of a hard cut to an empty frame.
+              const prevIdx = (slideshowIndex - 1 + SLIDESHOW_MEDIA.length) % SLIDESHOW_MEDIA.length;
+              const outgoing = prevIdx === slideshowIndex ? null : SLIDESHOW_MEDIA[prevIdx];
+              const current = SLIDESHOW_MEDIA[slideshowIndex] || SLIDESHOW_MEDIA[0];
+              const renderSlide = (
+                media: { kind: 'image' | 'video'; src: string },
+                role: 'current' | 'outgoing',
+              ) => {
+                const motion = SLIDE_MOTION[media.src] || { zoomTo: 1.12, panX: 0, panY: 0 };
+                const duration = media.kind === 'video' ? VIDEO_SLIDE_MS : PHOTO_SLIDE_MS;
+                const style = {
+                  ...(media.kind === 'image'
+                    ? {
+                        '--kb-crop': `${Math.round((1 - 1 / motion.zoomTo) * 100)}%`,
+                        '--kb-x0': '0%',
+                        '--kb-y0': '0%',
+                        '--kb-x1': `${motion.panX}%`,
+                        '--kb-y1': `${motion.panY}%`,
+                      }
+                    : {}),
+                  // Outgoing: single fade-out animation at the fade duration.
+                  // Current: pan/zoom + fade-in run together (see CSS), so the
+                  // slide duration goes through a var instead of inline
+                  // animationDuration, which would clobber the 900ms fade.
+                  ...(role === 'outgoing'
+                    ? { animationDuration: `${SLIDE_FADE_MS}ms` }
+                    : { '--kb-dur': `${duration}ms` }),
+                  zIndex: role === 'current' ? 2 : 1,
+                } as React.CSSProperties;
+                return media.kind === 'video' ? (
+                  <video
+                    key={`${role}-${media.src}`}
+                    src={media.src}
+                    className={`w-full h-[320px] object-cover absolute inset-0 ${
+                      role === 'outgoing'
+                        ? 'slideshow-fadeout'
+                        : 'slideshow-zoom slideshow-fadein'
+                    }`}
+                    style={style}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="auto"
+                  />
+                ) : (
+                  <img
+                    key={`${role}-${media.src}`}
+                    src={media.src}
+                    alt={role === 'current' ? `Foto ${slideshowIndex + 1}` : ''}
+                    aria-hidden={role === 'outgoing'}
+                    className={`w-full h-[320px] object-cover absolute inset-0 ${
+                      role === 'outgoing'
+                        ? 'slideshow-fadeout'
+                        : 'slideshow-pan slideshow-fadein'
+                    }`}
+                    style={style}
+                  />
+                );
+              };
+              return (
+                <>
+                  {outgoing && renderSlide(outgoing, 'outgoing')}
+                  {renderSlide(current, 'current')}
+                </>
               );
             })()}
           </div>

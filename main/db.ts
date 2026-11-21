@@ -315,9 +315,11 @@ function runMigrations(): void {
   console.log('[DB] Migrations complete');
 }
 
+// PRAGMA table_info returns one row per column — .get() only reads the first
+// (always `id` on users), so the guard never matched and the ALTER always ran,
+// throwing "duplicate column name: phone" on any DB that already had it.
 function columnExists(db: Database.Database, table: string, column: string): boolean {
-  const row = db.prepare(`PRAGMA table_info(${table})`).get() as { name: string } | undefined;
-  return !!row && row.name === column;
+  return getColumns(db, table).includes(column);
 }
 
 function addColumnIfMissing(db: Database.Database, table: string, columnDef: string): void {
